@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIM BG IPM Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .semester-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .course-row:hover {
+            background-color: #f9fafb;
+        }
+        .dark .course-row:hover {
+            background-color: #374151;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+    </style>
+    <script>
+        // Set theme on page load to prevent flashing
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <div class="absolute top-2 right-2 md:top-4 md:right-4 text-xs text-gray-500 dark:text-gray-400 font-medium">Built by Ashutosh × Shaurya</div>
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">IIM BG IPM Calculator</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Calculate your SGPA and CGPA for the Integrated Programme in Management</p>
+        </header>
+
+        <main id="calculator-container">
+            <!-- Semesters will be loaded here by JavaScript -->
+        </main>
+
+        <footer class="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4 text-center dark:text-white">Overall Results</h2>
+            <div id="results" class="grid grid-cols-1 gap-4 text-center">
+                <!-- CGPA result will be displayed here -->
+            </div>
+             <div class="mt-6 text-center">
+                <button id="reset-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Reset</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const coursesData = `Semester,Course,Credits
+I,Introduction to Accounting,2
+I,Emotional Intelligence and Mindfulness,3
+I,Effective Language and Communication Skills – I,2
+I,Principles of Management,3
+I,Managerial Economics I,2
+I,Business Mathematics,3
+I,Business History,2
+I,Principles of Marketing Management I,2
+I,Information Technology Management,2
+I,Performing Arts – I (Choreography/Dance),1
+I,Yoga & Physical Training,3
+II,Introduction to Cost & Management Accounting,2
+II,Critical Thinking and Writing Skills – I,2
+II,Spreadsheet Modelling,2
+II,Business & Company Law,2
+II,Indian Heritage and Culture,2
+II,Managerial Economics II,2
+II,World Business History,2
+II,Business Statistics I,3
+II,The Science of Wellbeing,2
+II,Introduction to Psychology,3
+II,Presentation Skills Workshop,1
+II,Performing Arts – II (Music),1
+II,Yoga & Physical Training,3
+III,Organizational Behaviour,3
+III,Environmental Science I,2
+III,Fundamentals of Corporate Finance,2
+III,Effective Language and Communication Skills – II,2
+III,Sociology,2
+III,Business Statistics II,2
+III,Introduction to Indian Economy,2
+III,India & World Geography,2
+III,Principles of Marketing Management II,2
+III,Introduction to Strategic Management,2
+III,Foreign Language – I,2
+III,Dramatic Arts (Theatre),2
+IV,Database Management System,3
+IV,Operations Research,3
+IV,Introduction to Human Resources Management,3
+IV,Critical Thinking and Writing Skills – II,2
+IV,Business Research Method,3
+IV,Public Policy,2
+IV,Creativity and Innovation,1
+IV,Business Ethics and Values,2
+IV,Game Theory,1
+IV,Performing Arts – III (Advanced Choreography/Dance),1
+IV,Foreign Language – II,2
+IV,Environmental Science II,2
+IV,RISE (Rural Immersion for Social Engagement),4
+V,Talent & Leadership Development,3
+V,Operations Management,3
+V,"Introduction to Money, Banking & Financial Markets",2
+V,Fundamentals of Business Intelligence & Data Science,3
+V,International Trade,1
+V,Open Economy Macroeconomics,2
+V,Industrial Relations and Labour Laws,3
+V,Sustainability Marketing,2
+V,Foreign Language – III,2
+V,Advanced Communication Skills,2
+V,Governance and Polity,2
+V,Visual Analytics,2
+VI,Social Entrepreneurship,2
+VI,Media and Society,2
+VI,New Venture Planning & Entrepreneurship Development,2
+VI,Management Insights from Bhagwat Geeta,2
+VI,Economic Growth and Development,2
+VI,Intellectual Property Rights,2
+VI,Case analysis workshop,1`;
+
+            const gradesData = `Grade,Grade Points
+A+,10
+A,9
+A-,8
+B+,7
+B,6
+B-,5
+C,4
+D,3
+F,0`;
+
+            function parseCSV(csv) {
+                const lines = csv.split('\n');
+                const result = [];
+                const headers = lines[0].split(',');
+                const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i]) continue;
+                    const obj = {};
+                    const currentline = lines[i].split(regex);
+                    for (let j = 0; j < headers.length; j++) {
+                        let value = currentline[j] || '';
+                        if (value.startsWith('"') && value.endsWith('"')) {
+                            value = value.substring(1, value.length - 1);
+                        }
+                        obj[headers[j]] = value.trim();
+                    }
+                    result.push(obj);
+                }
+                return result;
+            }
+
+            const courses = parseCSV(coursesData);
+            const grades = parseCSV(gradesData);
+
+            const semesters = {};
+            courses.forEach(course => {
+                if (!semesters[course.Semester]) {
+                    semesters[course.Semester] = [];
+                }
+                semesters[course.Semester].push(course);
+            });
+
+            const calculatorContainer = document.getElementById('calculator-container');
+            const resultsContainer = document.getElementById('results');
+
+            function createGradeSelector(courseId) {
+                const select = document.createElement('select');
+                select.id = `grade-${courseId}`;
+                select.className = 'grade-selector w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm';
+                select.dataset.courseId = courseId;
+                select.addEventListener('change', calculateAndUpdate);
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "-1";
+                defaultOption.textContent = "Select Grade";
+                select.appendChild(defaultOption);
+
+                grades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade['Grade Points'];
+                    option.textContent = grade.Grade;
+                    select.appendChild(option);
+                });
+                return select;
+            }
+
+            function createCourseRow(course, isCustom = false) {
+                const courseRow = document.createElement('div');
+                courseRow.className = 'course-row grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-4';
+                if (isCustom) {
+                    courseRow.classList.add('custom-course-row');
+                    courseRow.dataset.credits = course.Credits;
+                    courseRow.dataset.name = course.Course;
+                    courseRow.id = course.id;
+                }
+
+                const courseNameDiv = document.createElement('div');
+                courseNameDiv.className = 'flex justify-between items-center';
+
+                const courseName = document.createElement('span');
+                courseName.className = 'text-gray-800 dark:text-gray-200';
+                courseName.textContent = course.Course;
+                courseNameDiv.appendChild(courseName);
+
+                if (isCustom) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '✖';
+                    removeBtn.className = 'text-red-500 hover:text-red-700 font-bold ml-2';
+                    removeBtn.onclick = () => {
+                        courseRow.remove();
+                        calculateAndUpdate();
+                    };
+                    courseNameDiv.appendChild(removeBtn);
+                }
+
+                const courseCredits = document.createElement('div');
+                courseCredits.className = 'text-gray-600 dark:text-gray-400';
+                courseCredits.textContent = `Credits: ${course.Credits}`;
+
+                const gradeSelectorContainer = document.createElement('div');
+                const gradeSelector = createGradeSelector(course.id);
+                gradeSelectorContainer.appendChild(gradeSelector);
+
+                courseRow.appendChild(courseNameDiv);
+                courseRow.appendChild(courseCredits);
+                courseRow.appendChild(gradeSelectorContainer);
+
+                return courseRow;
+            }
+            
+            function calculateAndUpdate() {
+                let totalCredits = 0;
+                let totalPoints = 0;
+                resultsContainer.innerHTML = '';
+
+                Object.keys(semesters).forEach(semester => {
+                    let semesterTotalCredits = 0;
+                    let semesterTotalPoints = 0;
+
+                    semesters[semester].forEach(course => {
+                        const gradeSelector = document.getElementById(`grade-${course.id}`);
+                        if (!gradeSelector) return;
+                        const gradePoint = parseFloat(gradeSelector.value);
+                        const credits = parseFloat(course.Credits);
+
+                        if (gradePoint !== -1) {
+                            semesterTotalPoints += gradePoint * credits;
+                            semesterTotalCredits += credits;
+                        }
+                    });
+
+                    if (semester === 'VI') {
+                        document.querySelectorAll('#custom-course-container .custom-course-row').forEach(row => {
+                            const gradeSelector = row.querySelector('.grade-selector');
+                            if (!gradeSelector) return;
+                            const gradePoint = parseFloat(gradeSelector.value);
+                            const credits = parseFloat(row.dataset.credits);
+
+                            if (gradePoint !== -1) {
+                                semesterTotalPoints += gradePoint * credits;
+                                semesterTotalCredits += credits;
+                            }
+                        });
+                    }
+
+                    const semesterResultContainer = document.getElementById(`sgpa-result-${semester}`);
+                    if (semesterTotalCredits > 0) {
+                        const sgpa = (semesterTotalPoints / semesterTotalCredits).toFixed(2);
+                        semesterResultContainer.innerHTML = `<span class="text-gray-600 dark:text-gray-400 font-medium">SGPA: </span><span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">${sgpa}</span>`;
+                        totalCredits += semesterTotalCredits;
+                        totalPoints += semesterTotalPoints;
+                    } else {
+                        semesterResultContainer.innerHTML = '';
+                    }
+                });
+
+                if (totalCredits > 0) {
+                    const cgpa = (totalPoints / totalCredits).toFixed(2);
+                    const resultEl = document.createElement('div');
+                    resultEl.className = 'p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg';
+                    resultEl.innerHTML = `<h3 class="font-semibold text-xl dark:text-gray-200">Cumulative GPA</h3><p class="text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">${cgpa}</p><p class="text-md text-gray-600 dark:text-gray-400">CGPA</p>`;
+                    resultsContainer.appendChild(resultEl);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'text-center text-gray-500 dark:text-gray-400 col-span-full py-4';
+                    placeholder.textContent = 'Your calculated CGPA will appear here.';
+                    resultsContainer.appendChild(placeholder);
+                }
+                saveData();
+            }
+
+            function saveData() {
+                const gradeData = {};
+                document.querySelectorAll('.grade-selector').forEach(select => {
+                    if (select.value !== "-1") {
+                        gradeData[select.dataset.courseId] = select.value;
+                    }
+                });
+                localStorage.setItem('ipmCgpaCalculatorGrades', JSON.stringify(gradeData));
+
+                const customCourses = [];
+                document.querySelectorAll('#custom-course-container .custom-course-row').forEach(row => {
+                    customCourses.push({
+                        id: row.id,
+                        Course: row.dataset.name,
+                        Credits: row.dataset.credits
+                    });
+                });
+                localStorage.setItem('ipmCgpaCalculatorCustomCourses', JSON.stringify(customCourses));
+            }
+
+            function loadData() {
+                const customCourses = JSON.parse(localStorage.getItem('ipmCgpaCalculatorCustomCourses'));
+                if (customCourses && customCourses.length > 0) {
+                    const container = document.getElementById('custom-course-container');
+                    customCourses.forEach(course => {
+                        const courseRow = createCourseRow(course, true);
+                        container.appendChild(courseRow);
+                    });
+                }
+
+                const gradeData = JSON.parse(localStorage.getItem('ipmCgpaCalculatorGrades'));
+                if (gradeData) {
+                    Object.keys(gradeData).forEach(courseId => {
+                        const select = document.querySelector(`[data-course-id="${courseId}"]`);
+                        if (select) {
+                            select.value = gradeData[courseId];
+                        }
+                    });
+                }
+            }
+
+            function resetData() {
+                if (window.confirm("Are you sure you want to reset all grades and custom courses?")) {
+                    document.querySelectorAll('.grade-selector').forEach(select => {
+                        select.value = "-1";
+                    });
+                    document.getElementById('custom-course-container').innerHTML = '';
+                    localStorage.removeItem('ipmCgpaCalculatorGrades');
+                    localStorage.removeItem('ipmCgpaCalculatorCustomCourses');
+                    calculateAndUpdate();
+                }
+            }
+
+            function showAddCourseForm() {
+                const formContainer = document.getElementById('add-course-form-container');
+                const addButton = document.getElementById('add-custom-course-btn');
+
+                formContainer.innerHTML = `
+                    <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 space-y-3">
+                        <input type="text" id="custom-course-name" placeholder="Course Name" class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                        <input type="number" id="custom-course-credits" placeholder="Credits" class="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                        <div class="flex gap-2">
+                            <button id="save-custom-course-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Save</button>
+                            <button id="cancel-custom-course-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+                        </div>
+                    </div>
+                `;
+
+                addButton.style.display = 'none';
+
+                document.getElementById('save-custom-course-btn').addEventListener('click', () => {
+                    const courseNameInput = document.getElementById('custom-course-name');
+                    const creditsInput = document.getElementById('custom-course-credits');
+                    const courseName = courseNameInput.value.trim();
+                    const credits = parseFloat(creditsInput.value);
+
+                    if (!courseName || isNaN(credits) || credits <= 0) {
+                        courseNameInput.classList.toggle('border-red-500', !courseName);
+                        creditsInput.classList.toggle('border-red-500', isNaN(credits) || credits <= 0);
+                        return;
+                    }
+
+                    const course = {
+                        id: `custom-${Date.now()}`,
+                        Course: courseName,
+                        Credits: credits
+                    };
+
+                    const container = document.getElementById('custom-course-container');
+                    const courseRow = createCourseRow(course, true);
+                    container.appendChild(courseRow);
+
+                    formContainer.innerHTML = '';
+                    addButton.style.display = 'block';
+                    calculateAndUpdate();
+                });
+
+                document.getElementById('cancel-custom-course-btn').addEventListener('click', () => {
+                    formContainer.innerHTML = '';
+                    addButton.style.display = 'block';
+                });
+            }
+            
+            // --- Build the DOM first ---
+            Object.keys(semesters).sort().forEach(semester => {
+                const semesterCard = document.createElement('div');
+                semesterCard.className = 'semester-card bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md mb-6';
+                
+                const semesterToggleBtn = document.createElement('button');
+                semesterToggleBtn.className = 'w-full flex justify-between items-center text-left';
+                semesterToggleBtn.setAttribute('aria-expanded', 'false');
+
+                const semesterHeader = document.createElement('h2');
+                semesterHeader.className = 'text-xl font-bold text-gray-700 dark:text-gray-300';
+                semesterHeader.textContent = `Semester ${semester}`;
+                
+                const chevronIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                chevronIcon.setAttribute('class', 'w-6 h-6 transition-transform transform text-gray-500');
+                chevronIcon.setAttribute('fill', 'none');
+                chevronIcon.setAttribute('viewBox', '0 0 24 24');
+                chevronIcon.setAttribute('stroke', 'currentColor');
+                chevronIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />`;
+
+                semesterToggleBtn.appendChild(semesterHeader);
+                semesterToggleBtn.appendChild(chevronIcon);
+                semesterCard.appendChild(semesterToggleBtn);
+
+                const collapsibleContent = document.createElement('div');
+                collapsibleContent.className = 'collapsible-content hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-700';
+                
+                const courseListContainer = document.createElement('div');
+                collapsibleContent.appendChild(courseListContainer);
+
+                semesters[semester].forEach((course, index) => {
+                    const courseId = `${semester}-${index}`;
+                    course.id = courseId;
+                    const courseRow = createCourseRow(course);
+                    courseListContainer.appendChild(courseRow);
+                });
+                
+                if (semester === 'VI') {
+                    const customCourseContainer = document.createElement('div');
+                    customCourseContainer.id = 'custom-course-container';
+                    collapsibleContent.appendChild(customCourseContainer);
+
+                    const addCourseFormContainer = document.createElement('div');
+                    addCourseFormContainer.id = 'add-course-form-container';
+                    addCourseFormContainer.className = 'mt-4';
+                    collapsibleContent.appendChild(addCourseFormContainer);
+
+                    const addCourseBtn = document.createElement('button');
+                    addCourseBtn.id = 'add-custom-course-btn';
+                    addCourseBtn.textContent = '+ Add Custom Course';
+                    addCourseBtn.className = 'mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors';
+                    collapsibleContent.appendChild(addCourseBtn);
+                }
+
+                const semesterResultContainer = document.createElement('div');
+                semesterResultContainer.id = `sgpa-result-${semester}`;
+                semesterResultContainer.className = 'mt-4 text-right';
+                collapsibleContent.appendChild(semesterResultContainer);
+
+                semesterCard.appendChild(collapsibleContent);
+                calculatorContainer.appendChild(semesterCard);
+
+                semesterToggleBtn.addEventListener('click', () => {
+                    const isExpanded = semesterToggleBtn.getAttribute('aria-expanded') === 'true';
+                    semesterToggleBtn.setAttribute('aria-expanded', !isExpanded);
+                    collapsibleContent.classList.toggle('hidden');
+                    chevronIcon.classList.toggle('rotate-180');
+                });
+            });
+
+
+            // --- Now that DOM is built, initialize everything ---
+
+            // App Initialization
+            loadData();
+            calculateAndUpdate();
+            document.getElementById('add-custom-course-btn').addEventListener('click', showAddCourseForm);
+            document.getElementById('reset-button').addEventListener('click', resetData);
+        });
+    </script>
+</body>
+</html>
