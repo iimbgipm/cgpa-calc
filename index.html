@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IIM BG IPM CGPA Calculator</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>IIM Bodh Gaya (BG) IPM CGPA Calculator | SGPA & Percentage</title>
+    <meta name="description" content="An accurate and easy-to-use CGPA and SGPA calculator for students of the IIM Bodh Gaya (IIMBG) Integrated Programme in Management (IPM). Features retrospective goal planning and percentage conversion.">
+    <meta name="keywords" content="IIM BG, IIM Bodh Gaya, IPM, CGPA Calculator, SGPA Calculator, IIMBG IPM, CGPA to Percentage, IIM IPM, Integrated Programme in Management, iimbg ipm cgpa calc">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="IIM Bodh Gaya (BG) IPM CGPA Calculator">
+    <meta property="og:description" content="The complete academic calculator for IIM BG's IPM students.">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -32,16 +45,17 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
-        <header class="text-center mb-8">
+        <header class="text-center mb-4">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">IIM BG IPM CGPA Calculator</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">The complete tool for IIM Bodh Gaya's IPM students to calculate grades and plan academic goals.</p>
         </header>
 
-        <div class="text-right -mt-6 mb-4 px-1 md:px-0 text-sm font-medium text-indigo-600 dark:text-indigo-400">Built by Ashutosh × Shaurya</div>
+        <div class="text-right mb-8 px-1 md:px-0 text-sm font-medium text-indigo-600 dark:text-indigo-400">Built by Ashutosh × Shaurya</div>
 
         <!-- Retrospective Calculator Section -->
         <div class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-700 dark:text-gray-300">Retrospective CGPA Calculation</h2>
+                <h2 class="text-lg font-bold text-gray-700 dark:text-gray-300">Retrospective CGPA Goal Planner</h2>
                 <label for="retrospective-toggle" class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="retrospective-toggle" class="sr-only peer">
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
@@ -573,7 +587,7 @@ F,0`;
                 semesterHeader.className = 'text-xl font-bold text-gray-700 dark:text-gray-300';
                 semesterHeader.textContent = `Semester ${semester}`;
                 const chevronIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                chevronIcon.setAttribute('class', 'w-6 h-6 transition-transform transform text-gray-500');
+                chevronIcon.setAttribute('class', 'w-6 h-6 transition-transform transform text-gray-500 dark:text-gray-400');
                 chevronIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />`;
                 semesterToggleBtn.appendChild(semesterHeader);
                 semesterToggleBtn.appendChild(chevronIcon);
@@ -745,3 +759,4 @@ F,0`;
     </script>
 </body>
 </html>
+
