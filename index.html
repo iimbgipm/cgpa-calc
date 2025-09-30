@@ -83,8 +83,8 @@
         </main>
 
         <footer id="main-footer" class="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <div id="results" class="grid grid-cols-1 gap-4 text-center">
-                <!-- CGPA result will be displayed here -->
+            <div id="results" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                <!-- CGPA and Percentage result will be displayed here -->
             </div>
              <div class="mt-6 text-center">
                 <button id="reset-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Reset</button>
@@ -275,6 +275,24 @@ F,0`;
                 return courseRow;
             }
             
+            function convertCgpaToPercentage(cgpa) {
+                let percentage = 0;
+                if (cgpa >= 9 && cgpa <= 10) {
+                    percentage = 93 + (cgpa - 9) * 7;
+                } else if (cgpa >= 8 && cgpa < 9) {
+                    percentage = 85 + (cgpa - 8) * 8;
+                } else if (cgpa >= 7 && cgpa < 8) {
+                    percentage = 76 + (cgpa - 7) * 9;
+                } else if (cgpa >= 6 && cgpa < 7) {
+                    percentage = 66 + (cgpa - 6) * 10;
+                } else if (cgpa >= 5 && cgpa < 6) {
+                    percentage = 55 + (cgpa - 5) * 11;
+                } else {
+                    return null; 
+                }
+                return percentage.toFixed(2);
+            }
+
             function getSemesterPerformance(semester) {
                 let points = 0;
                 let credits = 0;
@@ -343,10 +361,24 @@ F,0`;
 
                 if (totalCredits > 0) {
                     const cgpa = (totalPoints / totalCredits).toFixed(2);
-                    const resultEl = document.createElement('div');
-                    resultEl.className = 'p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg';
-                    resultEl.innerHTML = `<h3 class="font-semibold text-xl dark:text-gray-200">Cumulative GPA</h3><p class="text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">${cgpa}</p><p class="text-md text-gray-600 dark:text-gray-400">CGPA</p>`;
-                    resultsContainer.appendChild(resultEl);
+                    const percentage = convertCgpaToPercentage(parseFloat(cgpa));
+                    
+                    // CGPA block
+                    const cgpaBlock = document.createElement('div');
+                    cgpaBlock.className = 'p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg';
+                    cgpaBlock.innerHTML = `<h3 class="font-semibold text-xl dark:text-gray-200">Cumulative GPA</h3><p class="text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">${cgpa}</p><p class="text-md text-gray-600 dark:text-gray-400">CGPA</p>`;
+                    resultsContainer.appendChild(cgpaBlock);
+
+                    // Percentage block
+                    const percentageBlock = document.createElement('div');
+                    percentageBlock.className = 'p-4 bg-green-50 dark:bg-gray-700 rounded-lg';
+                    if (percentage !== null) {
+                        percentageBlock.innerHTML = `<h3 class="font-semibold text-xl dark:text-gray-200">Estimated Percentage</h3><p class="text-4xl font-extrabold text-green-700 dark:text-green-400">${percentage}%</p><p class="text-md text-gray-600 dark:text-gray-400">Calculated</p>`;
+                    } else {
+                        percentageBlock.innerHTML = `<h3 class="font-semibold text-xl dark:text-gray-200">Estimated Percentage</h3><p class="text-2xl font-bold text-gray-500 dark:text-gray-400 mt-2">N/A</p><p class="text-md text-gray-600 dark:text-gray-400">CGPA out of range</p>`;
+                    }
+                    resultsContainer.appendChild(percentageBlock);
+
                 } else {
                     const placeholder = document.createElement('div');
                     placeholder.className = 'text-center text-gray-500 dark:text-gray-400 col-span-full py-4';
@@ -497,11 +529,8 @@ F,0`;
                     const semesterBaseCredits = semesters[semester].totalCredits;
 
                     if (isFuture) {
-                         // For future semesters, we only need their total credits.
-                         // Custom credits for Sem VI are not considered in retrospective mode for simplicity.
                         futureTotalCredits += semesterBaseCredits;
                     } else {
-                        // For past semesters, use the manually entered SGPA
                         const pastSgpaInput = document.getElementById(`past-sgpa-${semester}`);
                         const pastSgpa = parseFloat(pastSgpaInput.value);
                         if (!isNaN(pastSgpa) && pastSgpa >= 0) {
@@ -516,7 +545,6 @@ F,0`;
                     return;
                 }
 
-                // Calculate the total credits for all semesters involved (past entered + future selected)
                 const totalCombinedCredits = currentTotalCredits + futureTotalCredits;
                 const totalPointsNeeded = targetCgpa * totalCombinedCredits;
                 const futurePointsNeeded = totalPointsNeeded - currentTotalPoints;
