@@ -1,3 +1,4 @@
 User-agent: *
 Disallow:
+Allow: /
 Sitemap: https://iimbgipm.github.io/cgpa-calc/sitemap.xml
