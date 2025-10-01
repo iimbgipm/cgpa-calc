@@ -1,6 +1,3 @@
-Allow all search engine bots to crawl the entire site.
 User-agent: *
 Disallow:
-
-Point search engines to the sitemap for a list of all pages.
-Sitemap: https://www.google.com/search?q=https://iimbgipm.github.io/cgpa-calc//sitemap.xml
+Sitemap: https://iimbgipm.github.io/cgpa-calc/sitemap.xml
